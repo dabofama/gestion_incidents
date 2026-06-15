@@ -26,12 +26,34 @@ class UtilisateurDAO(BaseDAO):
             return None
 
     def delete_by_id(self, id):
-        try:
-            self.cursor.execute("DELETE FROM utilisateur WHERE id = %s", (id,))
-            self.db.commit()
-        except Exception as e:
-            self.db.rollback()
-            print(f" Erreur delete_by_id : {e}")
+            try:
+                self.cursor.execute(
+                    "SELECT COUNT(*) as total FROM incident WHERE utilisateur_id = %s", (id,)
+                )
+                result_incidents = self.cursor.fetchone()
+
+                if result_incidents["total"] > 0:
+                    print(" Impossible de supprimer : cet utilisateur a des incidents !")
+                    return False
+
+                self.cursor.execute(
+                    "SELECT COUNT(*) as total FROM intervention WHERE technicien_id = %s", (id,)
+                )
+                result_interventions = self.cursor.fetchone()
+
+                if result_interventions["total"] > 0:
+                    print("Impossible de supprimer : cet utilisateur a des interventions !")
+                    return False
+
+                self.cursor.execute("DELETE FROM utilisateur WHERE id = %s", (id,))
+                self.db.commit()
+                print("Utilisateur supprimé avec succès !")
+                return True
+
+            except Exception as e:
+                self.db.rollback()
+                print(f"Erreur delete_by_id : {e}")
+                return False
 
     def create(self, utilisateur):
         try:
