@@ -133,3 +133,13 @@ class IncidentDAO(BaseDAO):
         except Exception as e:
             print(f"Erreur get_by_priorite : {e}")
             return []
+
+    def get_ouverts_et_en_cours(self):
+        try:
+            self.cursor.execute(
+                "SELECT * FROM incident WHERE statut IN ('OUVERT', 'EN_COURS')"
+            )
+            return self.cursor.fetchall()
+        except Exception as e:
+            print(f"Erreur d affichage : {e}")
+            return []

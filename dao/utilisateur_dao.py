@@ -25,6 +25,17 @@ class UtilisateurDAO(BaseDAO):
             print(f" Erreur get_by_id : {e}")
             return None
 
+    def get_by_login(self, login):
+        try:
+            self.cursor.execute(
+                "SELECT * FROM utilisateur WHERE login = %s", (login,)
+            )
+            return self.cursor.fetchone()
+        except Exception as e:
+            print(f" Erreur d affichage : {e}")
+            return None
+
+
     def delete_by_id(self, id):
             try:
                 self.cursor.execute(
@@ -103,7 +114,7 @@ class UtilisateurDAO(BaseDAO):
             )
             data = self.cursor.fetchone()
             if data:
-                # On retourne un objet Utilisateur
+
                 return Utilisateur(
                     id=data["id"],
                     login=data["login"],
@@ -119,3 +130,14 @@ class UtilisateurDAO(BaseDAO):
         except Exception as e:
             print(f" Erreur authenticate : {e}")
             return None
+
+    def rechercher(self, terme):
+        try:
+            self.cursor.execute(
+                "SELECT * FROM utilisateur WHERE nom LIKE %s OR login LIKE %s OR service LIKE %s",
+                (f"%{terme}%", f"%{terme}%", f"%{terme}%")
+            )
+            return self.cursor.fetchall()
+        except Exception as e:
+            print(f" Erreur rechercher : {e}")
+            return []
