@@ -18,7 +18,7 @@ class DatabaseConnection:
             else:
                 print("Type de base de donnees introuvable")
                 return False
-            self.cursor = self.connection.cursor()
+            self.cursor = self.connection.cursor(dictionary=True)
             return True
         except Exception as e:
             print(f"Erreur de connexion a la base de donnees:{e}")
