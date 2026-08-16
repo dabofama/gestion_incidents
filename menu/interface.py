@@ -1,3 +1,5 @@
+import re
+
 from dao.incident_dao import IncidentDAO
 from dao.intervention_dao import InterventionDAO
 from dao.utilisateur_dao import UtilisateurDAO
@@ -256,7 +258,12 @@ def ajouter_utilisateur():
     password = input("Mot de passe : ")
     nom = input("Nom : ")
     prenom = input("Prénom : ")
-    email = input("Email : ")
+    while True:
+        email = input("Email : ")
+        if verif_email(email):
+            break
+        print("Email invalide ! Exemple : nom@domaine.com")
+
     print("Rôle : 1.UTILISATEUR  2.TECHNICIEN  3.ADMIN")
     choix = input("Votre choix : ")
     roles = {"1": "UTILISATEUR", "2": "TECHNICIEN", "3": "ADMIN"}
@@ -306,7 +313,12 @@ def modifier_utilisateur():
     login = input(f"Nouveau login ({data['login']}) : ") or data['login']
     nom = input(f"Nouveau nom ({data['nom']}) : ") or data['nom']
     prenom = input(f"Nouveau prénom ({data['prenom']}) : ") or data['prenom']
-    email = input(f"Nouvel email ({data['email']}) : ") or data['email']
+    while True:
+       email = input(f"Nouvel email ({data['email']}) : ") or data['email']
+       if verif_email(email):
+           break
+       print("Email invalide !")
+
     service = input(f"Nouveau service ({data['service']}) : ") or data['service']
     print("Rôle : 1.UTILISATEUR  2.TECHNICIEN  3.ADMIN")
     choix = input(f"Nouveau rôle ({data['role']}) : ")
@@ -378,3 +390,29 @@ def statistiques():
     else:
         print("  Aucune donnée.")
 
+    # 4. Taux de résolution dans les 48h
+        print("\n Taux de résolution dans les 48h :")
+        dao.cursor.execute("""
+            SELECT COUNT(*) as total FROM incident
+            WHERE statut IN ('RESOLU', 'FERME')
+        """)
+        total = dao.cursor.fetchone()["total"]
+
+        dao.cursor.execute("""
+            SELECT COUNT(*) as dans_48h FROM incident i
+            JOIN intervention inv ON i.id = inv.incident_id
+            WHERE i.statut IN ('RESOLU', 'FERME')
+            AND TIMESTAMPDIFF(HOUR, i.date_creation, inv.date_intervention) <= 48
+        """)
+        dans_48h = dao.cursor.fetchone()["dans_48h"]
+
+        if total > 0:
+            taux = (dans_48h / total) * 100
+            print(f"  {taux:.1f}% des incidents résolus en moins de 48h")
+        else:
+            print("  Pas encore de données.")
+
+
+def verif_email(email):
+    verif = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(verif, email) is not None
