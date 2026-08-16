@@ -6,7 +6,8 @@ class UtilisateurDAO(BaseDAO):
 
     def __init__(self):
         self.db = DatabaseConnection()
-        self.db.connect()
+        if not self.db.connection or not self.db.connection.is_connected():
+            self.db.connect()
         self.cursor = self.db.cursor
 
     def get_all(self):

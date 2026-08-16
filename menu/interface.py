@@ -15,8 +15,9 @@ def menu_utilisateur(utilisateur):
         print("=" * 40)
         print("1. Créer un nouvel incident")
         print("2. Consulter mes incidents")
-        print("3. Filtrer mes incidents par statut")
-        print("4. Filtrer mes incidents par priorité")
+        print("3. Consulter le détail d'un incident")
+        print("4. Filtrer mes incidents par statut")
+        print("5. Filtrer mes incidents par priorité")
         print("0. Se déconnecter")
         print("=" * 40)
 
@@ -27,8 +28,10 @@ def menu_utilisateur(utilisateur):
         elif choix == "2":
             mes_incidents(utilisateur)
         elif choix == "3":
-            filtrer_par_statut(utilisateur)
+            detail_incident(utilisateur)
         elif choix == "4":
+            filtrer_par_statut(utilisateur)
+        elif choix == "5":
             filtrer_par_priorite(utilisateur)
         elif choix == "0":
             print(" Au revoir !")
@@ -99,6 +102,42 @@ def filtrer_par_priorite(utilisateur):
         return
     for i in filtres:
         print(f"ID:{i['id']} | {i['titre']} | {i['priorite']} | {i['statut']}")
+
+
+def detail_incident(utilisateur):
+    print("\n--- Détail d'un incident ---")
+    id_incident = input("ID de l'incident : ")
+
+    dao_incident = IncidentDAO()
+    dao_intervention = InterventionDAO()
+
+    incident = dao_incident.get_by_id(int(id_incident))
+
+    if not incident:
+        print("Incident introuvable !")
+        return
+
+    if incident["utilisateur_id"] != utilisateur.id:
+        print("Vous ne pouvez pas voir cet incident !")
+        return
+
+    print("\n" + "=" * 40)
+    print(f"ID       : {incident['id']}")
+    print(f"Titre    : {incident['titre']}")
+    print(f"Description : {incident['description']}")
+    print(f"Priorité : {incident['priorite']}")
+    print(f"Statut   : {incident['statut']}")
+    print(f"Date     : {incident['date_creation']}")
+
+    print("\n--- Interventions ---")
+    interventions = dao_intervention.get_by_incident(int(id_incident))
+
+    if not interventions:
+        print("Aucune intervention pour cet incident.")
+        return
+
+    for i in interventions:
+        print(f"ID:{i['id']} | {i['commentaire']} | {i['duree_minutes']} min | {i['date_intervention']}")
 
 # ==================== MENU TECHNICIEN ====================
 
